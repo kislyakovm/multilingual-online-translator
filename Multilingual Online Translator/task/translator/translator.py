@@ -44,27 +44,54 @@ def site_connection(url):
     return soup
 
 
+def choose_language(language_1, language_2):
+    global target_language, second_language
+    languages = {1: 'Arabic',
+                 2: 'German',
+                 3: 'English',
+                 4: 'Spanish',
+                 5: 'French',
+                 6: 'Hebrew',
+                 7: 'Japanese',
+                 8: 'Dutch',
+                 9: 'Polish',
+                 10: 'Portuguese',
+                 11: 'Romanian',
+                 12: 'Russian',
+                 13: 'Turkish'}
+
+    second_language = languages[language_1]
+    target_language = languages[language_2]
+
+
 def welcome_print_and_input():
     global target_language, second_language
-    print('Type "en" if you want to translate from French into English, or "fr" if you want to translate from English '
-          'into French:')
+    print("""Hello, you're welcome to the translator. Translator supports: 
+1. Arabic
+2. German
+3. English
+4. Spanish
+5. French
+6. Hebrew
+7. Japanese
+8. Dutch
+9. Polish
+10. Portuguese
+11. Romanian
+12. Russian
+13. Turkish
+Type the number of your language: """)
 
-    language = input()
+    language_1 = int(input())
+    print('Type the number of language you want to translate to: ')
+    language_2 = int(input())
 
-    if language == 'en':
-        second_language = 'french'
-        target_language = 'english'
-    else:
-        second_language = 'english'
-        target_language = 'french'
+    choose_language(language_1, language_2)
 
     print('Type the word you want to translate:')
     user_word = input()
 
-    url = f'https://context.reverso.net/translation/{second_language}-{target_language}/{user_word}'
-
-    print(f'You chose "{language}" as the language to translate "{user_word}" to.')
-
+    url = f'https://context.reverso.net/translation/{second_language.lower()}-{target_language.lower()}/{user_word}'
     return url
 
 
