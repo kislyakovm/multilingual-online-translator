@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
+target_language = ''
+second_language = ''
+
 
 def words_parser(soup):
     words = soup.find_all('div', id="translations-content")
@@ -9,17 +12,27 @@ def words_parser(soup):
     for word in words:
         new_list.append(word.text)
 
+    print(f'{target_language.capitalize()} Translations:')
+
     new_list_2 = new_list[0].split()
-    print(new_list_2)
+    for i in range(5):
+        print(new_list_2[i])
+    print()
 
 
 def example_parser(soup):
     new_list = []
     examples = soup.find('section', id="examples-content").find_all('span', class_="text")
 
+    print(f'{target_language.capitalize()} Examples:')
+
     for ex in examples:
         new_list.append(ex.text.strip())
-    print(new_list)
+
+    for i in range(0, 10, 2):
+        print(new_list[i])
+        print(new_list[i + 1])
+        print()
 
 
 def site_connection(url):
@@ -27,12 +40,12 @@ def site_connection(url):
     r = requests.get(url, headers={'User-Agent': user_agent})
     print(r.status_code, 'OK')
 
-    # r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup
 
 
 def welcome_print_and_input():
+    global target_language, second_language
     print('Type "en" if you want to translate from French into English, or "fr" if you want to translate from English '
           'into French:')
 
@@ -49,7 +62,6 @@ def welcome_print_and_input():
     user_word = input()
 
     url = f'https://context.reverso.net/translation/{second_language}-{target_language}/{user_word}'
-    print(url)
 
     print(f'You chose "{language}" as the language to translate "{user_word}" to.')
 
@@ -57,11 +69,11 @@ def welcome_print_and_input():
 
 
 def main():
-
     url = welcome_print_and_input()
     soup = site_connection(url)
 
-    print('Translations')
+    print()
+
     words_parser(soup)
     example_parser(soup)
 
