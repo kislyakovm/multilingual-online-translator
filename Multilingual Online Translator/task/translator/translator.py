@@ -1,18 +1,35 @@
-import requests
+import requests, argparse
 from bs4 import BeautifulSoup
 
-language_1 = 0
-language_2 = 0
-user_word = ''
-target_language = ''
-second_language = ''
-languages = {}
-new_list_2 = []
+parser = argparse.ArgumentParser()
+
+parser.add_argument('source_language')
+parser.add_argument('target_language')
+parser.add_argument('word')
+
+args = parser.parse_args()
+
+user_word = args.word
+target_language = args.target_language
+source_language = args.source_language
+languages = ['Arabic', 'German', 'English', 'Spanish', 'French', 'Hebrew', 'Japanese',
+             'Dutch', 'Polish', 'Portuguese', 'Romanian', 'Russian', 'Turkish']
+
+
+if target_language.capitalize() not in languages and target_language != 'all':
+    print(f"Sorry, the program doesn't support {target_language}")
+    exit()
+elif source_language.capitalize() not in languages and source_language != 'all':
+    print(f"Sorry, the program doesn't support {source_language}")
+    exit()
 
 
 def words_parser(soup):
-    global new_list_2
-    words = soup.find('div', id="translations-content").find_all('a')
+    try:
+        words = soup.find('div', id="translations-content").find_all('a')
+    except AttributeError:
+        print(f'Sorry, unable to find {user_word}')
+        exit()
 
     new_list = []
     for word in words:
@@ -46,92 +63,38 @@ def example_parser(soup):
 
 def site_connection(url):
     user_agent = 'Mozilla/5.0'
-    r = requests.get(url, headers={'User-Agent': user_agent})
+    try:
+        r = requests.get(url, headers={'User-Agent': user_agent})
+    except requests.exceptions.ConnectionError:
+        print('Something wrong with your internet connection')
+        exit()
 
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup
 
 
-def choose_language():
-    global target_language, second_language, languages
-    languages = {1: 'Arabic',
-                 2: 'German',
-                 3: 'English',
-                 4: 'Spanish',
-                 5: 'French',
-                 6: 'Hebrew',
-                 7: 'Japanese',
-                 8: 'Dutch',
-                 9: 'Polish',
-                 10: 'Portuguese',
-                 11: 'Romanian',
-                 12: 'Russian',
-                 13: 'Turkish'}
-
-    second_language = languages[language_1]
-    target_language = languages[language_2]
-
-
-def any_language():
-    choose_language()
-
-    url = f'https://context.reverso.net/translation/{second_language.lower()}-{target_language.lower()}/{user_word}'
-    return url
-
-
-def welcome_print_and_input():
-    global target_language, second_language, user_word, language_1, language_2
-    print("""Hello, you're welcome to the translator. Translator supports: 
-1. Arabic
-2. German
-3. English
-4. Spanish
-5. French
-6. Hebrew
-7. Japanese
-8. Dutch
-9. Polish
-10. Portuguese
-11. Romanian
-12. Russian
-13. Turkish
-Type the number of your language: """)
-
-    language_1 = int(input())
-    print('Type the number of a language you want to translate to or "0" to translate to all languages:')
-    language_2 = int(input())
-
-    print('Type the word you want to translate:')
-    user_word = input()
-
-    if language_2 == 0:
-        return ''
-    else:
-        url = any_language()
-        return url
-
-
 def main():
-    global file, language_2
-
-    url = welcome_print_and_input()
+    global file, target_language
     file = open(f'{user_word}.txt', 'w', encoding='utf=8')
 
-    if language_2 == 0:
-        for i in range(1, 14):
-            if i == language_1:
+    if target_language == 'all':
+        for i in languages:
+            if i.lower() == source_language:
                 continue
-            language_2 = i
-            url = any_language()
-            soup = site_connection(url)
 
+            target_language = i
+            url = f'https://context.reverso.net/translation/' \
+                  f'{source_language.lower()}-{target_language.lower()}/{user_word}'
+
+            soup = site_connection(url)
             print()
 
             words_parser(soup)
             example_parser(soup)
     else:
+        url = f'https://context.reverso.net/translation/' \
+              f'{source_language.lower()}-{target_language.lower()}/{user_word.lower()}'
         soup = site_connection(url)
-
         print()
 
         words_parser(soup)
